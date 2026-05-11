@@ -35,7 +35,7 @@ def lambda_handler(event, context):
             ContentType='application/json'
         )
         
-        print(f'Successfully saved {len(stories)} stories to s3://{RAW_BUCKET}/{filename}')
+        print(f'Successfully saved {len(stories)} Hacker News stories to s3://{RAW_BUCKET}/{filename}')
         
         return {
             'statusCode': 200,
