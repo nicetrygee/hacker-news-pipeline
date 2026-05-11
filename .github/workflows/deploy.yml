@@ -1,0 +1,81 @@
+name: Deploy to AWS Lambda
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-fetch:
+    name: Deploy Fetch Function
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          cd fetch
+          mkdir package
+          pip install boto3 --target ./package
+          cp fetch_reddit.py ./package/
+
+      - name: Zip function
+        run: |
+          cd fetch/package
+          zip -r ../fetch_function.zip .
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name reddit-fetch \
+            --zip-file fileb://fetch/fetch_function.zip \
+            --region eu-west-2
+
+  deploy-process:
+    name: Deploy Process Function
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          cd process
+          mkdir package
+          pip install boto3 --target ./package
+          cp process_reddit.py ./package/
+
+      - name: Zip function
+        run: |
+          cd process/package
+          zip -r ../process_function.zip .
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name reddit-process \
+            --zip-file fileb://process/process_function.zip \
+            --region eu-west-2
