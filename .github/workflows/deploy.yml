@@ -22,7 +22,7 @@ jobs:
           cd fetch
           mkdir package
           pip install boto3 --target ./package
-          cp fetch_reddit.py ./package/
+          cp fetch_hackernews.py ./package/
 
       - name: Zip function
         run: |
@@ -39,7 +39,7 @@ jobs:
       - name: Deploy to Lambda
         run: |
           aws lambda update-function-code \
-            --function-name reddit-fetch \
+            --function-name hackernews-fetch \
             --zip-file fileb://fetch/fetch_function.zip \
             --region eu-west-2
 
@@ -59,7 +59,7 @@ jobs:
           cd process
           mkdir package
           pip install boto3 --target ./package
-          cp process_reddit.py ./package/
+          cp process_hackernews.py ./package/
 
       - name: Zip function
         run: |
@@ -76,6 +76,6 @@ jobs:
       - name: Deploy to Lambda
         run: |
           aws lambda update-function-code \
-            --function-name reddit-process \
+            --function-name hackernews-process \
             --zip-file fileb://process/process_function.zip \
             --region eu-west-2
