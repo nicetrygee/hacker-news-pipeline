@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+*.zip
+package/
+*.env
+.env
+
+# AWS
+*.pem
+credentials
+.DS_Store
+txt
+psycopg2-layer/
