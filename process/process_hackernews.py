@@ -134,12 +134,13 @@ def lambda_handler(event, context):
 
     # Load valid posts into RDS PostgreSQL
     conn = psycopg2.connect(
-        host=DB_HOST,
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        port=5432
-    )
+    host=DB_HOST,
+    dbname=DB_NAME,
+    user=DB_USER,
+    password=DB_PASSWORD,
+    port=5432,
+    sslmode='require'
+)
 
     cursor = conn.cursor()
 
