@@ -6,8 +6,26 @@ on:
       - main
 
 jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Run tests
+        run: pytest tests/ -v
+
   deploy-fetch:
     name: Deploy Fetch Function
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -45,6 +63,7 @@ jobs:
 
   deploy-process:
     name: Deploy Process Function
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

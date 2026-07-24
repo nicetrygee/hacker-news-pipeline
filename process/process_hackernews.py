@@ -58,6 +58,19 @@ def validate_post(post):
 
     return len(issues) == 0, issues
 
+def transform_post(post, fetched_at):
+    return {
+        'post_id': str(post.get('id', '')),
+        'title': post.get('title', '').replace('\n', ' ').strip(),
+        'score': int(post.get('score', 0)),
+        'num_comments': int(post.get('descendants', 0)),
+        'url': post.get('url', ''),
+        'author': post.get('by', ''),
+        'created_at': datetime.fromtimestamp(post.get('time', 0), tz=timezone.utc),
+        'fetched_at': fetched_at,
+        'rank': int(post.get('rank', 0))
+    }
+
 def lambda_handler(event, context):
     s3 = boto3.client('s3')
 
@@ -72,21 +85,8 @@ def lambda_handler(event, context):
     raw_data = json.loads(response['Body'].read().decode())
 
     # Transform the data
-    posts = []
     fetched_at = datetime.now(timezone.utc)
-
-    for post in raw_data:
-        posts.append({
-            'post_id': str(post.get('id', '')),
-            'title': post.get('title', '').replace('\n', ' ').strip(),
-            'score': int(post.get('score', 0)),
-            'num_comments': int(post.get('descendants', 0)),
-            'url': post.get('url', ''),
-            'author': post.get('by', ''),
-            'created_at': datetime.fromtimestamp(post.get('time', 0), tz=timezone.utc),
-            'fetched_at': fetched_at,
-            'rank': int(post.get('rank', 0))
-        })
+    posts = [transform_post(post, fetched_at) for post in raw_data]
 
     # Run data quality checks
     valid_posts = []

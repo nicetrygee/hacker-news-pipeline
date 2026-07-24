@@ -6,22 +6,28 @@ from datetime import datetime, timezone
 # S3 bucket name
 RAW_BUCKET = 'my-pipeline-raw-ldn'
 
+TOP_STORIES_URL = 'https://hacker-news.firebaseio.com/v0/topstories.json'
+ITEM_URL_TEMPLATE = 'https://hacker-news.firebaseio.com/v0/item/{}.json'
+STORY_LIMIT = 10
+
+def fetch_json(url):
+    with urllib.request.urlopen(url) as response:
+        return json.loads(response.read().decode())
+
+def fetch_top_stories(limit=STORY_LIMIT):
+    top_story_ids = fetch_json(TOP_STORIES_URL)[:limit]
+
+    stories = []
+    for rank, story_id in enumerate(top_story_ids, start=1):
+        story = fetch_json(ITEM_URL_TEMPLATE.format(story_id))
+        story['rank'] = rank
+        stories.append(story)
+    return stories
+
 def lambda_handler(event, context):
     try:
-        # Fetch top 25 story IDs from Hacker News
-        top_stories_url = 'https://hacker-news.firebaseio.com/v0/topstories.json'
-        with urllib.request.urlopen(top_stories_url) as response:
-            top_story_ids = json.loads(response.read().decode())[:10]
-        
-        # Fetch details for each story
-        stories = []
-        for rank, story_id in enumerate(top_story_ids, start=1):
-            story_url = f'https://hacker-news.firebaseio.com/v0/item/{story_id}.json'
-            with urllib.request.urlopen(story_url) as response:
-                story = json.loads(response.read().decode())
-                story['rank'] = rank
-                stories.append(story)
-        
+        stories = fetch_top_stories()
+
         # Create a timestamped filename
         timestamp = datetime.now(timezone.utc).strftime('%Y/%m/%d/%H-%M-%S')
         filename = f'hackernews/{timestamp}/raw.json'

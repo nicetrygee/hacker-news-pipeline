@@ -5,6 +5,8 @@ __pycache__/
 package/
 *.env
 .env
+.venv/
+.pytest_cache/
 
 # AWS
 *.pem
