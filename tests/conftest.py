@@ -20,7 +20,4 @@ except ImportError:
     stub.connect = lambda **kwargs: None
     sys.modules['psycopg2'] = stub
 
-os.environ.setdefault('DB_HOST', 'test-db-host')
-os.environ.setdefault('DB_NAME', 'test-db')
-os.environ.setdefault('DB_USER', 'test-user')
-os.environ.setdefault('DB_PASSWORD', 'test-password')
+os.environ.setdefault('DB_SECRET_ARN', 'arn:aws:secretsmanager:eu-west-2:000000000000:secret:test-db-credentials')

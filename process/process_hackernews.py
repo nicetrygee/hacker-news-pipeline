@@ -9,14 +9,22 @@ from datetime import datetime, timezone
 # S3 bucket
 PROCESSED_BUCKET = os.environ.get('PROCESSED_BUCKET', 'my-pipeline-processed-ldn')
 
-# RDS connection details
-DB_HOST = os.environ['DB_HOST']
-DB_NAME = os.environ['DB_NAME']
-DB_USER = os.environ['DB_USER']
-DB_PASSWORD = os.environ['DB_PASSWORD']
+# RDS credentials are stored in Secrets Manager rather than passed directly,
+# since Lambda env vars are visible to anyone with read access to the function config.
+DB_SECRET_ARN = os.environ['DB_SECRET_ARN']
 
 # SNS topic ARN - we'll add this later
 SNS_TOPIC_ARN = os.environ.get('SNS_TOPIC_ARN', None)
+
+_db_credentials = None
+
+def get_db_credentials():
+    global _db_credentials
+    if _db_credentials is None:
+        secrets_client = boto3.client('secretsmanager')
+        secret = secrets_client.get_secret_value(SecretId=DB_SECRET_ARN)
+        _db_credentials = json.loads(secret['SecretString'])
+    return _db_credentials
 
 def send_alert(subject, message):
     """Send an SNS alert if topic is configured."""
@@ -132,14 +140,15 @@ def lambda_handler(event, context):
         print(f'Saved processed CSV to s3://{PROCESSED_BUCKET}/{processed_key}')
 
     # Load valid posts into RDS PostgreSQL
+    db_credentials = get_db_credentials()
     conn = psycopg2.connect(
-    host=DB_HOST,
-    dbname=DB_NAME,
-    user=DB_USER,
-    password=DB_PASSWORD,
-    port=5432,
-    sslmode='require'
-)
+        host=db_credentials['host'],
+        dbname=db_credentials['dbname'],
+        user=db_credentials['username'],
+        password=db_credentials['password'],
+        port=db_credentials.get('port', 5432),
+        sslmode='require'
+    )
 
     cursor = conn.cursor()
 

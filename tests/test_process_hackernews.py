@@ -149,6 +149,25 @@ def test_transform_post_fills_in_defaults_for_missing_fields():
     assert record['rank'] == 0
 
 
+# --- get_db_credentials -------------------------------------------------------
+
+def test_get_db_credentials_fetches_and_caches(monkeypatch):
+    monkeypatch.setattr(ph, '_db_credentials', None)
+
+    mock_secretsmanager = MagicMock()
+    mock_secretsmanager.get_secret_value.return_value = {
+        'SecretString': json.dumps({'host': 'h', 'dbname': 'd', 'username': 'u', 'password': 'p', 'port': 5432})
+    }
+    monkeypatch.setattr(ph.boto3, 'client', lambda service_name, **kwargs: mock_secretsmanager)
+
+    first = ph.get_db_credentials()
+    second = ph.get_db_credentials()
+
+    assert first == {'host': 'h', 'dbname': 'd', 'username': 'u', 'password': 'p', 'port': 5432}
+    assert second is first
+    mock_secretsmanager.get_secret_value.assert_called_once_with(SecretId=ph.DB_SECRET_ARN)
+
+
 # --- lambda_handler -----------------------------------------------------------
 
 def s3_event(bucket='my-pipeline-raw-ldn', key='hackernews/2026/07/24/00-00-00/raw.json'):
@@ -171,10 +190,23 @@ def patch_clients(monkeypatch, raw_posts, sns_topic_arn=None):
 
     mock_sns = MagicMock()
 
+    mock_secretsmanager = MagicMock()
+    mock_secretsmanager.get_secret_value.return_value = {
+        'SecretString': json.dumps({
+            'host': 'test-db-host',
+            'dbname': 'test-db',
+            'username': 'test-user',
+            'password': 'test-password',
+            'port': 5432,
+        })
+    }
+
     def fake_client(service_name, **kwargs):
-        return {'s3': mock_s3, 'sns': mock_sns}[service_name]
+        return {'s3': mock_s3, 'sns': mock_sns, 'secretsmanager': mock_secretsmanager}[service_name]
 
     monkeypatch.setattr(ph.boto3, 'client', fake_client)
+    # get_db_credentials caches its result at module scope, so reset it per test.
+    monkeypatch.setattr(ph, '_db_credentials', None)
 
     mock_cursor = MagicMock()
     mock_cursor.rowcount = 1
