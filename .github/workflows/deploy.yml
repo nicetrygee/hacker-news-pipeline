@@ -27,6 +27,9 @@ jobs:
     name: Deploy Fetch Function
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@v7
 
@@ -50,8 +53,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::360934290883:role/github-actions-hackernews-pipeline-deploy
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Deploy to Lambda
@@ -65,6 +67,9 @@ jobs:
     name: Deploy Process Function
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@v7
 
@@ -88,8 +93,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::360934290883:role/github-actions-hackernews-pipeline-deploy
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Deploy to Lambda

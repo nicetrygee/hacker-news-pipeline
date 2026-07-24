@@ -6,9 +6,8 @@ import psycopg2
 import os
 from datetime import datetime, timezone
 
-# S3 buckets
-RAW_BUCKET = 'my-pipeline-raw-ldn'
-PROCESSED_BUCKET = 'my-pipeline-processed-ldn'
+# S3 bucket
+PROCESSED_BUCKET = os.environ.get('PROCESSED_BUCKET', 'my-pipeline-processed-ldn')
 
 # RDS connection details
 DB_HOST = os.environ['DB_HOST']

@@ -1,14 +1,15 @@
 import json
 import boto3
+import os
 import urllib.request
 from datetime import datetime, timezone
 
 # S3 bucket name
-RAW_BUCKET = 'my-pipeline-raw-ldn'
+RAW_BUCKET = os.environ.get('RAW_BUCKET', 'my-pipeline-raw-ldn')
 
 TOP_STORIES_URL = 'https://hacker-news.firebaseio.com/v0/topstories.json'
 ITEM_URL_TEMPLATE = 'https://hacker-news.firebaseio.com/v0/item/{}.json'
-STORY_LIMIT = 10
+STORY_LIMIT = int(os.environ.get('STORY_LIMIT', '10'))
 
 def fetch_json(url):
     with urllib.request.urlopen(url) as response:
