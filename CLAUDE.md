@@ -94,6 +94,7 @@ terraform apply
   `process/process_hackernews.py`.
 - **`aws_db_instance.main` has `prevent_destroy`** in Terraform — it will hard-error rather than ever
   let `terraform apply`/`destroy` delete the database.
-- **Known infra gap**: RDS is still publicly reachable (security group allows `0.0.0.0/0` on 5432)
-  because the Lambdas aren't in a VPC. Closing this needs a VPC + NAT Gateway (~$32/month) and is
-  tracked as a follow-up, not yet done.
+- **Both Lambdas run inside the default VPC** (`terraform/vpc.tf`), in private subnets routed out
+  through a single NAT Gateway (needed for the fetch Lambda's calls to the public HN API, and for AWS
+  API calls). RDS's security group only allows inbound Postgres from the Lambdas' security group and
+  `publicly_accessible = false` — it has no path in from the internet.

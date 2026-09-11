@@ -3,15 +3,13 @@ resource "aws_security_group" "rds" {
   description = "Created by RDS management console"
   vpc_id      = "vpc-37e4d55f"
 
-  # NOTE: this remains open to the internet on purpose for now — the Lambdas
-  # aren't in a VPC, so they reach RDS over its public endpoint from AWS's
-  # shared, unpredictable IP range. Closing this properly requires putting
-  # both Lambdas in the VPC behind a NAT Gateway; tracked as a follow-up.
+  # Both Lambdas now run inside the VPC (see vpc.tf) and reach RDS on its
+  # private address, so ingress is scoped to their security group only.
   ingress {
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.lambda.id]
   }
 
   egress {
@@ -44,7 +42,7 @@ resource "aws_db_instance" "main" {
   vpc_security_group_ids = [aws_security_group.rds.id]
 
   multi_az            = false
-  publicly_accessible = true
+  publicly_accessible = false
   storage_encrypted   = true
   kms_key_id          = "arn:aws:kms:eu-west-2:360934290883:key/d7aaec6f-9d25-481d-a30a-203159881937"
 

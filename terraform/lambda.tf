@@ -15,6 +15,11 @@ resource "aws_lambda_function" "fetch" {
   filename         = "${path.module}/placeholder-lambda.zip"
   source_code_hash = filebase64sha256("${path.module}/placeholder-lambda.zip")
 
+  vpc_config {
+    subnet_ids         = [aws_subnet.lambda_private_a.id, aws_subnet.lambda_private_b.id]
+    security_group_ids = [aws_security_group.lambda.id]
+  }
+
   lifecycle {
     ignore_changes = [filename, source_code_hash]
   }
@@ -42,6 +47,11 @@ resource "aws_lambda_function" "process" {
       SNS_TOPIC_ARN = aws_sns_topic.alerts.arn
       DB_SECRET_ARN = aws_secretsmanager_secret.db_credentials.arn
     }
+  }
+
+  vpc_config {
+    subnet_ids         = [aws_subnet.lambda_private_a.id, aws_subnet.lambda_private_b.id]
+    security_group_ids = [aws_security_group.lambda.id]
   }
 
   lifecycle {

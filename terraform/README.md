@@ -44,11 +44,15 @@ especially given `aws_db_instance.main` carries a `prevent_destroy` lifecycle
 guard that will hard-error rather than ever let Terraform delete the
 database.
 
+## Networking
+
+Both Lambdas run inside the account's default VPC (`vpc.tf`), in two private
+subnets routed to the internet through a single NAT Gateway (needed for the
+fetch Lambda's calls to the public Hacker News API, and for the AWS API
+calls both Lambdas make). RDS (`aws_db_instance.main`) is not publicly
+accessible and its security group only allows inbound Postgres traffic from
+the Lambdas' security group — it has no path in from the public internet.
+
 ## Known gaps
 
-- **RDS is still publicly reachable** (`aws_security_group.rds` allows
-  `0.0.0.0/0` on 5432) — the Lambdas aren't in a VPC, so this is what lets
-  them reach the database today. Closing it properly means putting both
-  Lambdas in the VPC behind a NAT Gateway (adds ~$32/month); tracked as a
-  follow-up, not done here.
 - No automatic secret rotation configured on the Secrets Manager secret.
