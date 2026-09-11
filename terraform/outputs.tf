@@ -14,9 +14,8 @@ output "processed_bucket_name" {
   value = aws_s3_bucket.processed.bucket
 }
 
-output "db_endpoint" {
-  value = aws_db_instance.main.endpoint
-}
+# db_endpoint is temporarily removed along with aws_db_instance.main —
+# see the comment at the top of rds.tf.
 
 output "db_secret_arn" {
   value = aws_secretsmanager_secret.db_credentials.arn

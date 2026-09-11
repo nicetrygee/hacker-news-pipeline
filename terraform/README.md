@@ -39,19 +39,34 @@ terraform apply
 ```
 
 Applies are **manual only** — this is deliberately not wired into CI. Infra
-changes (unlike code deploys) get reviewed before they hit real resources,
-especially given `aws_db_instance.main` carries a `prevent_destroy` lifecycle
-guard that will hard-error rather than ever let Terraform delete the
-database.
+changes (unlike code deploys) get reviewed before they hit real resources.
+(When `aws_db_instance.main` is defined again — see below — it should carry
+a `prevent_destroy` lifecycle guard, as it did before, so Terraform can
+never delete the database.)
 
 ## Networking
 
 Both Lambdas run inside the account's default VPC (`vpc.tf`), in two private
 subnets routed to the internet through a single NAT Gateway (needed for the
 fetch Lambda's calls to the public Hacker News API, and for the AWS API
-calls both Lambdas make). RDS (`aws_db_instance.main`) is not publicly
-accessible and its security group only allows inbound Postgres traffic from
-the Lambdas' security group — it has no path in from the public internet.
+calls both Lambdas make). Whenever RDS exists (see below), its security
+group only allows inbound Postgres traffic from the Lambdas' security
+group and it is not publicly accessible — it has no path in from the
+public internet.
+
+## Current status: no RDS instance, pipeline paused
+
+`aws_db_instance.main` is not currently defined in Terraform, and there is
+no live RDS instance in the account. It was deleted outside Terraform on
+2026-08-02 (CloudTrail: `admingregg` via the AWS CLI), with a final
+snapshot taken (`reddit-pipeline-db-final-snapshot`, still available in
+`eu-west-2`). See the comment at the top of `rds.tf` for what recreating it
+needs to look like — it is not a plain uncomment-and-apply, since the old
+config's password value was a literal placeholder string.
+
+`aws_scheduler_schedule.hourly_fetch` is pinned to `state = "DISABLED"` to
+match its current real state (the process Lambda can't do anything useful
+without a database) — re-enable deliberately once RDS is back.
 
 ## Known gaps
 

@@ -2,6 +2,11 @@ resource "aws_scheduler_schedule" "hourly_fetch" {
   name       = "reddit-pipeline-hourly"
   group_name = "default"
 
+  # Currently disabled in AWS (pinned here so this doesn't get silently
+  # re-enabled by an unrelated apply) — pending the RDS decision above,
+  # since the process Lambda can't do anything useful without a database.
+  state = "DISABLED"
+
   flexible_time_window {
     mode = "OFF"
   }
