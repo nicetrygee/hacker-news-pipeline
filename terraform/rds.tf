@@ -22,9 +22,9 @@ resource "aws_security_group" "rds" {
 
 # aws_db_instance.main is intentionally NOT defined right now.
 #
-# The live instance was deleted outside Terraform on 2026-08-02 by
-# admingregg via the AWS CLI (confirmed via CloudTrail), with a final
-# snapshot taken: `reddit-pipeline-db-final-snapshot` (still present,
+# The live instance was deleted outside Terraform on 2026-08-02 via the
+# AWS CLI (confirmed via CloudTrail), with a final snapshot taken:
+# `reddit-pipeline-db-final-snapshot` (still present,
 # state=available, region eu-west-2). Terraform's state still remembers the
 # old instance, so leaving a resource block here would make the next
 # `terraform apply` recreate it from scratch — empty, with the master

@@ -58,7 +58,7 @@ public internet.
 
 `aws_db_instance.main` is not currently defined in Terraform, and there is
 no live RDS instance in the account. It was deleted outside Terraform on
-2026-08-02 (CloudTrail: `admingregg` via the AWS CLI), with a final
+2026-08-02 (confirmed via CloudTrail) via the AWS CLI, with a final
 snapshot taken (`reddit-pipeline-db-final-snapshot`, still available in
 `eu-west-2`). See the comment at the top of `rds.tf` for what recreating it
 needs to look like — it is not a plain uncomment-and-apply, since the old
