@@ -22,6 +22,13 @@ resource "aws_iam_role_policy_attachment" "fetch_lambda_basic_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+# Required for the Lambda service to create/describe/delete the ENIs it
+# needs to run inside the VPC (see vpc_config in lambda.tf).
+resource "aws_iam_role_policy_attachment" "fetch_lambda_vpc_access" {
+  role       = aws_iam_role.fetch_lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+}
+
 resource "aws_iam_role_policy" "fetch_lambda_permissions" {
   name = "fetch-permissions"
   role = aws_iam_role.fetch_lambda.id
@@ -48,6 +55,13 @@ resource "aws_iam_role" "process_lambda" {
 resource "aws_iam_role_policy_attachment" "process_lambda_basic_execution" {
   role       = aws_iam_role.process_lambda.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+# Required for the Lambda service to create/describe/delete the ENIs it
+# needs to run inside the VPC (see vpc_config in lambda.tf).
+resource "aws_iam_role_policy_attachment" "process_lambda_vpc_access" {
+  role       = aws_iam_role.process_lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
 resource "aws_iam_role_policy" "process_lambda_permissions" {

@@ -74,8 +74,7 @@ infrastructure is managed separately by Terraform (see below).
 ## Infrastructure
 
 Everything else — the S3 buckets, RDS instance, IAM roles, the SNS topic, the
-Secrets Manager secret holding the DB credentials, and the EventBridge
-schedule — is defined in [`terraform/`](terraform/). See
-[`terraform/README.md`](terraform/README.md) for usage and the current known
-gap (RDS is still reachable on the public internet; closing that needs a VPC
-+ NAT Gateway, tracked as a follow-up).
+Secrets Manager secret holding the DB credentials, the networking that keeps
+RDS off the public internet, and the EventBridge schedule — is defined in
+[`terraform/`](terraform/). See [`terraform/README.md`](terraform/README.md)
+for usage.
